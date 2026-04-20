@@ -36,5 +36,6 @@ router.delete('/:id', async (req, res) => {
   if (error) return res.status(400).json({ error: error.message })
   res.json({ message: 'Deleted' })
 })
+console.log("POST ROUTES LOADED");
 
 export default router
