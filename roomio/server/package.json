@@ -2,6 +2,8 @@
   "name": "roomio-server",
   "version": "1.0.0",
   "main": "index.js",
+  "id": "moduletype",
+"type": "module",
   "scripts": {
     "start": "node index.js",
     "dev": "nodemon index.js"
