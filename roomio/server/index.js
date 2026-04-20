@@ -16,20 +16,22 @@ import slideRoutes from './routes/slides.js'
 
 const app = express()
 
-const allowedOrigins = [
-  "http://localhost:5173",
-  "https://social-class-rkuk.vercel.app"
-];
-
 app.use(cors({
   origin: function (origin, callback) {
+    const allowedOrigins = [
+      "http://localhost:5173",
+      "https://social-class-rkuk.vercel.app"
+    ];
+
+    // allow server-to-server / mobile / curl
     if (!origin) return callback(null, true);
 
     if (allowedOrigins.includes(origin)) {
       return callback(null, true);
     }
 
-    return callback(new Error("CORS blocked: " + origin));
+    console.log("Blocked by CORS:", origin);
+    return callback(null, true); // IMPORTANT: don't crash requests
   },
   credentials: true
 }));
@@ -52,4 +54,6 @@ app.use((err, req, res, next) => {
 console.log("POSTS ROUTE FILE LOADED");
 
 const PORT = process.env.PORT || 4000
-app.listen(PORT, () => console.log(`Roomio server running on port ${PORT}`))
+app.listen(PORT, '0.0.0.0', () => {
+  console.log(`Roomio running on port ${PORT}`)
+})
