@@ -16,13 +16,20 @@ import slideRoutes from './routes/slides.js'
 
 const app = express()
 
-const allowedOrigins = process.env.ALLOWED_ORIGINS?.split(',') || [];
+const allowedOrigins = [
+  "http://localhost:5173",
+  "https://social-class-rkuk.vercel.app"
+];
 
 app.use(cors({
-  origin: (origin, callback) => {
+  origin: function (origin, callback) {
     if (!origin) return callback(null, true);
-    if (allowedOrigins.includes(origin)) return callback(null, true);
-    return callback(new Error('Not allowed by CORS'));
+
+    if (allowedOrigins.includes(origin)) {
+      return callback(null, true);
+    }
+
+    return callback(new Error("CORS blocked: " + origin));
   },
   credentials: true
 }));
