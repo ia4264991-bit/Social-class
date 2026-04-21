@@ -1,6 +1,5 @@
 import { createContext, useContext, useEffect, useState } from 'react'
 import { supabase } from '../lib/supabase'
-import api from '../lib/axios'
 
 const AuthContext = createContext(null)
 
@@ -10,40 +9,35 @@ export function AuthProvider({ children }) {
   const [loading, setLoading] = useState(true)
 
   const fetchProfile = async (userId) => {
-    const { data } = await supabase
-      .from('profiles')
-      .select('*')
-      .eq('id', userId)
-      .single()
+    const { data, error } = await supabase
+      .from('profiles').select('*').eq('id', userId).single()
     if (data) setProfile(data)
+    else console.warn('fetchProfile error:', error?.message)
+    return data
   }
 
-  const setOnline = async (userId, online) => {
-    await supabase.from('profiles').update({ is_online: online }).eq('id', userId)
-  }
+  const setOnline = (userId, online) =>
+    supabase.from('profiles').update({ is_online: online }).eq('id', userId)
 
   useEffect(() => {
     supabase.auth.getSession().then(({ data: { session } }) => {
-      setUser(session?.user ?? null)
-      if (session?.user) {
-        fetchProfile(session.user.id)
-        setOnline(session.user.id, true)
-      }
+      const u = session?.user ?? null
+      setUser(u)
+      if (u) { fetchProfile(u.id); setOnline(u.id, true) }
       setLoading(false)
     })
 
     const { data: listener } = supabase.auth.onAuthStateChange((_event, session) => {
-      setUser(session?.user ?? null)
-      if (session?.user) {
-        fetchProfile(session.user.id)
-        setOnline(session.user.id, true)
-      } else {
-        setProfile(null)
-      }
+      const u = session?.user ?? null
+      setUser(u)
+      if (u) { fetchProfile(u.id); setOnline(u.id, true) }
+      else setProfile(null)
     })
 
     const handleUnload = () => {
-      if (user?.id) setOnline(user.id, false)
+      supabase.auth.getSession().then(({ data: { session } }) => {
+        if (session?.user) setOnline(session.user.id, false)
+      })
     }
     window.addEventListener('beforeunload', handleUnload)
 
@@ -59,20 +53,16 @@ export function AuthProvider({ children }) {
     return data
   }
 
-  const register = async (fields) => {
-    const { error } = await api.post('/api/auth/register', fields)
-    if (error) throw new Error(error)
-  }
-
   const logout = async () => {
     if (user?.id) await setOnline(user.id, false)
     await supabase.auth.signOut()
+    setUser(null); setProfile(null)
   }
 
   const refreshProfile = () => user && fetchProfile(user.id)
 
   return (
-    <AuthContext.Provider value={{ user, profile, loading, login, register, logout, refreshProfile }}>
+    <AuthContext.Provider value={{ user, profile, loading, login, logout, refreshProfile, fetchProfile }}>
       {children}
     </AuthContext.Provider>
   )
