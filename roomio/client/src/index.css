@@ -2,46 +2,136 @@
 @tailwind components;
 @tailwind utilities;
 
+/* ── Default theme (dark) ── */
+:root {
+  --bg:         #0f1117;
+  --card:       #161b27;
+  --card2:      #1a2235;
+  --border:     #1e293b;
+  --border2:    #243047;
+  --text:       #f1f5f9;
+  --muted:      #94a3b8;
+  --subtle:     #475569;
+  --accent:     #00c853;
+  --accent-dim: #00a844;
+  --accent-text:#0f1117;
+  --danger:     #ef4444;
+}
+
 @layer base {
-  * { -webkit-tap-highlight-color: transparent; }
+  * { -webkit-tap-highlight-color: transparent; box-sizing: border-box; }
+
+  html { scroll-behavior: smooth; }
+
   body {
     font-family: 'DM Sans', sans-serif;
-    background-color: #0f1117;
-    color: #f1f5f9;
+    background-color: var(--bg);
+    color: var(--text);
     overscroll-behavior: none;
+    min-height: 100vh;
   }
-  h1,h2,h3,h4 { font-family: 'Nunito', sans-serif; }
+
+  h1, h2, h3, h4, h5 { font-family: 'Nunito', sans-serif; }
   input, textarea, select, button { font-family: 'DM Sans', sans-serif; }
 }
 
+/* ── CSS-variable-powered utility classes ── */
+/* These are what ALL components must use so themes work */
 @layer utilities {
-  .scrollbar-hide::-webkit-scrollbar { display: none; }
-  .scrollbar-hide { -ms-overflow-style: none; scrollbar-width: none; }
-  .scrollbar-thin::-webkit-scrollbar { width: 3px; }
-  .scrollbar-thin::-webkit-scrollbar-track { background: transparent; }
-  .scrollbar-thin::-webkit-scrollbar-thumb { background: #1e293b; border-radius: 2px; }
+  /* Backgrounds */
+  .t-bg    { background-color: var(--bg); }
+  .t-card  { background-color: var(--card); }
+  .t-card2 { background-color: var(--card2); }
 
-  /* native feel */
-  .touch-manipulation { touch-action: manipulation; }
+  /* Borders */
+  .t-border  { border-color: var(--border); }
+  .t-border2 { border-color: var(--border2); }
+
+  /* Text */
+  .t-text   { color: var(--text); }
+  .t-muted  { color: var(--muted); }
+  .t-subtle { color: var(--subtle); }
+
+  /* Accent */
+  .t-accent     { color: var(--accent); }
+  .t-accent-bg  { background-color: var(--accent); }
+  .t-accent-text{ color: var(--accent-text); }
+
+  /* Card component */
+  .card {
+    background-color: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 16px;
+  }
+  .card:hover { border-color: var(--border2); }
+
+  /* Press effect */
+  .press { cursor: pointer; }
+  .press:active { transform: scale(0.97); transition: transform 0.1s; }
+
+  /* Scrollbar */
+  .scrollbar-hide { scrollbar-width: none; -ms-overflow-style: none; }
+  .scrollbar-hide::-webkit-scrollbar { display: none; }
+  .scrollbar-thin { scrollbar-width: thin; scrollbar-color: var(--border) transparent; }
+  .scrollbar-thin::-webkit-scrollbar { width: 3px; }
+  .scrollbar-thin::-webkit-scrollbar-thumb { background: var(--border); border-radius: 2px; }
+
+  /* Safe areas */
   .safe-top    { padding-top: env(safe-area-inset-top, 0px); }
   .safe-bottom { padding-bottom: env(safe-area-inset-bottom, 12px); }
 
-  /* glass card */
-  .glass {
-    background: rgba(255,255,255,0.05);
-    backdrop-filter: blur(12px);
-    border: 1px solid rgba(255,255,255,0.08);
+  /* Input base style */
+  .t-input {
+    background-color: var(--card2);
+    border: 1px solid var(--border);
+    color: var(--text);
+    border-radius: 12px;
+    padding: 10px 16px;
+    font-size: 14px;
+    outline: none;
+    width: 100%;
+    transition: border-color 0.15s;
   }
-  .glass-green {
-    background: rgba(0,102,51,0.25);
-    border: 1px solid rgba(0,180,80,0.2);
+  .t-input:focus { border-color: var(--accent); }
+  .t-input::placeholder { color: var(--subtle); }
+
+  /* Select */
+  .t-select {
+    background-color: var(--card2);
+    border: 1px solid var(--border);
+    color: var(--text);
+    border-radius: 12px;
+    padding: 10px 16px;
+    font-size: 14px;
+    outline: none;
+    width: 100%;
   }
-  /* card */
-  .card {
-    background: #161b27;
-    border: 1px solid #1e293b;
-    border-radius: 16px;
+
+  /* Button accent */
+  .t-btn-accent {
+    background-color: var(--accent);
+    color: var(--accent-text);
+    border: none;
+    border-radius: 20px;
+    padding: 12px 24px;
+    font-weight: 800;
+    font-size: 14px;
+    cursor: pointer;
+    transition: opacity 0.15s;
   }
-  /* active press */
-  .press:active { transform: scale(0.97); transition: transform 0.1s; }
+  .t-btn-accent:hover { opacity: 0.9; }
+  .t-btn-accent:disabled { opacity: 0.4; cursor: not-allowed; }
+
+  /* Ghost button */
+  .t-btn-ghost {
+    background-color: transparent;
+    border: 1px solid var(--border);
+    color: var(--muted);
+    border-radius: 12px;
+    padding: 8px 16px;
+    font-size: 14px;
+    cursor: pointer;
+    transition: all 0.15s;
+  }
+  .t-btn-ghost:hover { border-color: var(--accent); color: var(--text); }
 }

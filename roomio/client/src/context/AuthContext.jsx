@@ -10,10 +10,49 @@ export function AuthProvider({ children }) {
 
   const fetchProfile = async (userId) => {
     const { data, error } = await supabase
-      .from('profiles').select('*').eq('id', userId).single()
-    if (data) setProfile(data)
-    else console.warn('fetchProfile error:', error?.message)
-    return data
+      .from('profiles')
+      .select('*')
+      .eq('id', userId)
+      .single()
+
+    if (data) {
+      setProfile(data)
+      return data
+    }
+
+    // Profile row missing — this happens when:
+    // 1. User registered directly via Supabase dashboard
+    // 2. Profile insert failed during registration
+    // We create a minimal profile so the app doesn't break
+    if (error?.code === 'PGRST116') {
+      console.warn('Profile not found for user', userId, '— creating fallback profile')
+      const { data: authUser } = await supabase.auth.getUser()
+      const email = authUser?.user?.email || ''
+      const fallback = {
+        id: userId,
+        full_name: email.split('@')[0] || 'New User',
+        username: email.split('@')[0] || userId.slice(0, 8),
+        department: 'Computer Science',
+        hall: '',
+        room_number: '',
+        level: '',
+        is_online: true,
+      }
+      const { data: created, error: createErr } = await supabase
+        .from('profiles')
+        .upsert(fallback, { onConflict: 'id' })
+        .select()
+        .single()
+
+      if (!createErr && created) {
+        setProfile(created)
+        return created
+      }
+      console.error('Could not create fallback profile:', createErr?.message)
+    } else {
+      console.warn('fetchProfile error:', error?.message)
+    }
+    return null
   }
 
   const setOnline = (userId, online) =>
@@ -56,7 +95,8 @@ export function AuthProvider({ children }) {
   const logout = async () => {
     if (user?.id) await setOnline(user.id, false)
     await supabase.auth.signOut()
-    setUser(null); setProfile(null)
+    setUser(null)
+    setProfile(null)
   }
 
   const refreshProfile = () => user && fetchProfile(user.id)
